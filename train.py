@@ -8,12 +8,12 @@ from loss import DiceBCELoss
 import pandas as pd
 import os
 
-def saveModel(epoch, loss): 
+def saveModel(epoch, loss, savePath): 
     path = os.path.join(savePath, f"epoch{epoch}_loss{loss}_model.pth")
     torch.save(model.state_dict(), path) 
 
 
-def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePath):
+def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePath, device):
     
     best_val_loss = 0.0
     
@@ -27,13 +27,14 @@ def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePat
         for i, data in enumerate(trainloader, 1):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
+            inputs, labels = inputs.to(device), labels.to(device)
             print(inputs.shape)
             # zero the parameter gradients
             optimizer.zero_grad()
     
             # forward + backward + optimize
             outputs = model(inputs)
-            loss = running_loss(outputs, labels)
+            loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
     
@@ -44,6 +45,7 @@ def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePat
                 model.eval() 
                 for data in testloader: 
                    inputs, outputs = data 
+                   inputs = inputs.to(device)
                    predicted_outputs = model(inputs) 
                    val_loss = criterion(predicted_outputs, outputs) 
                  
@@ -51,7 +53,7 @@ def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePat
  
         # Save the model if the accuracy is the best 
         if running_val_loss > best_val_loss: 
-            saveModel(epoch, running_val_loss) 
+            saveModel(epoch, running_val_loss, savePath) 
             best_val_loss = running_val_loss 
          
         # Print the statistics of the epoch 
@@ -60,9 +62,14 @@ def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePat
 
 
 if __name__ == "__main__":
+    root = r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data"
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(device)
     
     savePath = r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data\Save_model"
     model = models.UNet3D(in_channels=1, out_channels=3)
+    model.to(device)
     criterion = DiceBCELoss()
     optimizer = Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
 
@@ -73,8 +80,8 @@ if __name__ == "__main__":
     batch_size = 1
     N_epoch = 20
 
-    trainset = pd.read_csv(r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data\train.csv")
-    testset = pd.read_csv(r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data\test.csv")
+    trainset = pd.read_csv(os.path.join(root, "train.csv"))
+    testset = pd.read_csv(os.path.join(root, "test.csv"))
     trainloader = Dataset(trainset)
     testloader = Dataset(testset)
     

@@ -8,7 +8,7 @@ from PIL import Image
 import torch
 import torch.nn.functional as F
 
-train = pd.read_csv(r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data\train.csv")
+train = pd.read_csv(r"C:\Users\nampo\Downloads\Data\train.csv")
 
 def processMask(maskArray, listValues):
     mask = []
@@ -37,10 +37,11 @@ def getMask3D(MRPath):
 
 class Dataset(Dataset):
     'characterizes a dataset for pytorch'
-    def __init__(self, df, size=100, transform=False):
+    def __init__(self, df, size=100, transform=False, train = True):
         self.df = df
         self.transform = transform
         self.size = size
+        self.train = train
 
     def __len__(self):
         'denotes the total number of samples'
@@ -50,24 +51,27 @@ class Dataset(Dataset):
         'Generates one sample of data'
         #select sample
         path_mr = os.path.join(self.df["root"].iloc[index], self.df["localImPath"].iloc[index])
-        path_mask = os.path.join(self.df["root"].iloc[index], self.df["localMaskPath"].iloc[index])
         X = getDicom3D(path_mr)
-        y = getMask3D(path_mask)
-        
-        X = X[np.newaxis,np.newaxis,:,:,:]  
-        X = from_numpy(X).float()
-        y = y[np.newaxis,:,:,:]
-        y = from_numpy(y).float()
 
-        
+        X = X[np.newaxis, np.newaxis, :, :, :]
+        X = from_numpy(X).float()
         if self.transform:
             X = self.transform(X)
-            y = self.transform(y)    
+
+        if self.train:
+            path_mask = os.path.join(self.df["root"].iloc[index], self.df["localMaskPath"].iloc[index])
+            y = getMask3D(path_mask)
+            y = y[np.newaxis, :, :, :]
+            y = from_numpy(y).float()
+            if self.transform:
+                y = self.transform(y)
+            return X,y
+
         
-        return X, y
+        return X
     
 if __name__ == "__main__":
-    df= pd.read_csv(r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data\train.csv")
+    df= pd.read_csv(r"C:\Users\nampo\Downloads\Data\train.csv")
     path_mr = os.path.join(df["root"].iloc[0], df["localImPath"].iloc[0])
     path_mask = os.path.join(df["root"].iloc[0], df["localMaskPath"].iloc[0])
     ar1 = getDicom3D(path_mr)

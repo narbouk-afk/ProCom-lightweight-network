@@ -5,15 +5,18 @@ import torch.nn.functional as F
 class DiceBCELoss(nn.Module):
     def __init__(self, alpha=0.5, weight=None, size_average=True):
         super(DiceBCELoss, self).__init__()
+        self.alpha = alpha
+        self.weight = weight
+        self.size_average = size_average
 
     def forward(self, inputs, targets, smooth=1):
         
         #comment out if your model contains a sigmoid or equivalent activation layer
-        inputs = F.sigmoid(inputs)       
+        inputs = F.sigmoid(inputs)
         
         #flatten label and prediction tensors
-        inputs = inputs.view(-1)
-        targets = targets.view(-1)
+        inputs = inputs.reshape(-1)
+        targets = targets.reshape(-1)
         
         intersection = (inputs * targets).sum()                            
         dice_loss = 1 - (2.*intersection + smooth)/(inputs.sum() + targets.sum() + smooth)  

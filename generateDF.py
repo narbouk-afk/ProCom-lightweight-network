@@ -42,7 +42,7 @@ def generateTest(root): # for me C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data
     return testDF
             
 if __name__ == "__main__":
-    root = r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data"
+    root = r"C:\Users\nampo\Downloads\Data"
     train = generateTrain(root)
     train.to_csv(os.path.join(root, "train.csv"), index=False)
     test = generateTest(root)

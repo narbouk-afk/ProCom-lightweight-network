@@ -10,6 +10,15 @@ import torch.nn.functional as F
 
 train = pd.read_csv(r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data\train.csv")
 
+def processMask(maskArray, listValues):
+    mask = []
+    for val in listValues[1:]:
+        maskSlice = maskArray.astype("int")
+        maskSlice[maskSlice !=int(val)]=0
+        maskSlice[maskSlice !=0]=1
+        mask.append(maskSlice)
+    return np.asarray(mask)
+
 def getDicom3D(MRPath):
     l = []
     for im in os.listdir(MRPath):
@@ -20,17 +29,12 @@ def getMask3D(MRPath):
     l = []
     for im in os.listdir(MRPath):
         l.append(np.asarray(Image.open(os.path.join(MRPath,im))).astype("int16"))
+    values = np.unique(np.asarray(l))
+    for i, im in enumerate(l):
+        l[i] = processMask(im,values)
     return np.asarray(l)
 
-def ResizeGridSample(X_init, size, is_mask=False):
-    shape = X_init.shape
-    grid = torch.tensor([shape[0], size, size, 2]).float()
-    print(grid)
-    if is_mask:
-        return F.grid_sample(X_init, grid, mode='nearest')
-    
-    return F.grid_sample(X_init, grid)
-         
+
 class Dataset(Dataset):
     'characterizes a dataset for pytorch'
     def __init__(self, df, size=100, transform=False):
@@ -52,7 +56,7 @@ class Dataset(Dataset):
         
         X = X[np.newaxis,np.newaxis,:,:,:]  
         X = from_numpy(X).float()
-        y = y[np.newaxis,np.newaxis,:,:,:]
+        y = y[np.newaxis,:,:,:]
         y = from_numpy(y).float()
 
         
@@ -68,5 +72,5 @@ if __name__ == "__main__":
     path_mask = os.path.join(df["root"].iloc[0], df["localMaskPath"].iloc[0])
     ar1 = getDicom3D(path_mr)
     ar2 = getMask3D(path_mask)
-    ar1 = from_numpy(ar1).float()
-    
+    ar2 = from_numpy(ar2).float()
+    print(ar2.shape)

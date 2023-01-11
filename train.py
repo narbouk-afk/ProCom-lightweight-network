@@ -13,7 +13,7 @@ def saveModel(epoch, loss, savePath):
     torch.save(model.state_dict(), path) 
 
 
-def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePath, device):
+def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePath, device, transform):
     
     best_val_loss = 0.0
     
@@ -28,12 +28,13 @@ def train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePat
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
-            print(inputs.shape)
             # zero the parameter gradients
             optimizer.zero_grad()
     
             # forward + backward + optimize
             outputs = model(inputs)
+            print("out: ", outputs.shape)
+            print("lab :", labels.shape)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -68,22 +69,22 @@ if __name__ == "__main__":
     print(device)
     
     savePath = r"C:\Users\piclt\Desktop\Ecole\4A\ProCom\Data\Save_model"
-    model = models.UNet3D(in_channels=1, out_channels=3)
+    model = models.UNet3D(in_channels=1, out_channels=4)
     model.to(device)
     criterion = DiceBCELoss()
     optimizer = Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
 
     transform = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+        [transforms.RandomCrop(size=32)])
+#         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
     batch_size = 1
     N_epoch = 20
 
     trainset = pd.read_csv(os.path.join(root, "train.csv"))
     testset = pd.read_csv(os.path.join(root, "test.csv"))
-    trainloader = Dataset(trainset)
-    testloader = Dataset(testset)
+    trainloader = Dataset(trainset, transform=transform)
+    testloader = Dataset(testset, transform=transform)
     
-    train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePath)
+    train(model, criterion, optimizer, trainloader, testloader, N_epoch, savePath, device, transform)
     print('Finished Training')

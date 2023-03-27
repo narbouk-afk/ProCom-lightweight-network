@@ -8,6 +8,7 @@ import evaluation as evaluation
 from loss import DiceBCELoss
 import pandas as pd
 import os
+import sys
 
 def saveModel(model, epoch, loss, savePath): 
     path = os.path.join(savePath, f"epoch{epoch}_loss{loss}_model.pth")
@@ -75,7 +76,7 @@ def train(model, criterion, optimizer, N_epoch,
 
 
 if __name__ == "__main__":
-    root = r"D:\IMT Atlantique\TAF\ProCom\rendu\ProCom-lightweight-network\data"
+    root = sys.argv[1]
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)

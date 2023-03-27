@@ -6,11 +6,11 @@ As the dataset train2D.csv and test2D.csv have already been built and saved in t
 Also, if you want to skip training part and only see results, you can use all models saves that are in the data folder (and of course skip, the training cells in the notebook).
 
 ### Generate from scratch
-If you want to generate everything from scratch please follow the instructions below :
+If you want to generate everything from scratch please follow the instructions below :  
 
 First, download the CHAOS challenge datasets and put in in "data" folder
-download links(download the 2 datasets):
-https://zenodo.org/record/3431873/files/CHAOS_Test_Sets.zip?download=1
+download links(download the 2 datasets):  
+https://zenodo.org/record/3431873/files/CHAOS_Test_Sets.zip?download=1  
 https://zenodo.org/record/3431873/files/CHAOS_Train_Sets.zip?download=1
 
 

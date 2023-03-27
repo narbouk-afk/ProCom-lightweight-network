@@ -3,7 +3,8 @@ import torchvision
 import torchvision.transforms as transforms
 from dataset import Dataset
 from torch.optim import Adam
-import models as models 
+import models as models
+import evaluation as evaluation
 from loss import DiceBCELoss
 import pandas as pd
 import os
@@ -79,6 +80,7 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
     savePath = r"/Model_save"
+    # model = DMFNet(c=1, groups=16, norm='bn', num_classes=1)  # To try DMF network
     model = models.UNet2D()
     model.to(device)
     N_epoch = 20
@@ -88,22 +90,14 @@ if __name__ == "__main__":
 
     transform = transforms.Compose(
     [transforms.ToTensor(), transforms.CenterCrop(size=256)])
-#         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    batch_size = 1
-    N_epoch = 10
-
-
-    #Test set don't have ground masks, so we can't use it for validation
-    # testset = pd.read_csv(os.path.join(root, "test.csv"))
-    # testloader = Dataset(testset, transform=transform)
     traincsv = pd.read_csv(os.path.join(root, "train2D.csv"))
     traincsv["root"] = root
     traincsv["localImPath"] = traincsv["localImPath"].apply(lambda x: x.replace("\\", "/"))
     traincsv["localMaskPath"] = traincsv["localMaskPath"].apply(lambda x: x.replace("\\", "/")) 
     train80 = traincsv.sample(frac = 0.8, random_state=0)
     test20 = traincsv.drop(train80.index)
-    trainset = Dataset(train80, transform=None)
+    trainset = Dataset(train80, transform=transform)
 
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,shuffle=True)
     testset = Dataset(test20, transform=transform)
@@ -115,3 +109,7 @@ if __name__ == "__main__":
           trainloader, testloader, transform,
           savePath, device)
     print('Finished Training')
+    
+    maps = evaluation.eval(model, testloader, transform, device)
+    inputs, outputs, labels = evaluation.processOutput(maps, 15)
+    evaluation.showEval(inputs, outputs, labels)

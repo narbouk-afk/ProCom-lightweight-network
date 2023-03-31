@@ -1,7 +1,8 @@
 # ProCom-lightweight-network
 
-As the dataset train2D.csv and test2D.csv have already been built and saved in the folder data, you just have to run the Knowledge distillation notebook to perform knowledge distillation.
+Image segmentation using a lightweight UNet that benefits from knowledge distillation from a cumbersome UNet to perform segmentation of medical images and get as accurate segmentation as cumbersome UNet's segmentation.
 
+As the dataset train2D.csv and test2D.csv have already been built and saved in the folder data, you just have to run the Knowledge distillation notebook to perform knowledge distillation.
 
 Also, if you want to skip training part and only see results, you can use all models saves that are in the data folder (and of course skip, the training cells in the notebook).
 
